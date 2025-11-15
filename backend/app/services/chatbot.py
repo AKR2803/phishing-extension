@@ -33,18 +33,30 @@ class SecurityChatbot:
 IMPORTANT RULES:
 1. ONLY answer questions related to cybersecurity, email security, phishing, malware, or online safety
 2. If asked about non-security topics, respond with: "I can only help with cybersecurity and email security questions. Please ask about phishing, malware, online safety, or related security topics."
-3. Provide practical, actionable advice
-4. Keep responses concise but informative
-5. Always prioritize user safety
+3. When email context is provided, analyze it directly - NEVER ask for more details or say you need the full email
+4. Provide specific analysis based on the email content provided
+5. Keep responses concise but informative
+6. Always prioritize user safety
+7. If email context is available, reference specific elements (subject, sender, content) in your analysis
 
 You can help with:
+- Analyzing current email for phishing indicators
 - Identifying phishing emails
 - Email security best practices
 - Password security
 - Malware protection
 - Online safety tips
 - Suspicious link analysis
-- Security software recommendations"""
+- Security software recommendations
+
+When analyzing emails, look for:
+- Suspicious sender domains
+- Urgent or threatening language
+- Requests for personal information
+- Suspicious links or attachments
+- Grammar and spelling errors
+- Generic greetings
+- Too-good-to-be-true offers"""
     
     def get_response(self, message: str, session_id: str = 'default', email_context: Dict = None) -> Dict:
         """Get chatbot response."""
@@ -70,8 +82,12 @@ You can help with:
             # Enhance message with email context if provided
             enhanced_message = message
             if email_context:
-                context_info = f"\n\nCurrent email context:\nSubject: {email_context.get('subject', 'N/A')}\nSender: {email_context.get('sender', 'N/A')}\nBody preview: {email_context.get('body', 'N/A')[:200]}..."
-                enhanced_message = message + context_info
+                subject = email_context.get('subject', 'N/A')
+                sender = email_context.get('sender', 'N/A')
+                body = email_context.get('body', 'N/A')[:500]  # Increased limit
+                
+                context_info = f"\n\n=== CURRENT EMAIL ANALYSIS ===\nSubject: {subject}\nFrom: {sender}\nContent: {body}\n=== END EMAIL ===\n\nPlease analyze this email based on the question: {message}"
+                enhanced_message = context_info
             
             # Prepare messages for Bedrock
             messages = [

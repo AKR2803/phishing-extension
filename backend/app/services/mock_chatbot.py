@@ -90,21 +90,29 @@ class MockSecurityChatbot:
         body = email_context.get('body', '')
         
         analysis = []
+        risk_level = "LOW"
         
         # Check for common phishing indicators
-        if any(word in subject.lower() for word in ['urgent', 'verify', 'suspend', 'action required']):
-            analysis.append("The subject contains urgent language which is common in phishing.")
+        if any(word in subject.lower() for word in ['urgent', 'verify', 'suspend', 'action required', 'immediate', 'expires']):
+            analysis.append("⚠️ Subject uses urgent/threatening language")
+            risk_level = "MEDIUM"
         
-        if any(word in body.lower() for word in ['click here', 'verify account', 'suspended', 'expires']):
-            analysis.append("The email body contains suspicious phrases often used in phishing attempts.")
+        if any(word in body.lower() for word in ['click here', 'verify account', 'suspended', 'expires', 'confirm identity', 'update payment']):
+            analysis.append("⚠️ Body contains suspicious action requests")
+            risk_level = "HIGH"
         
-        if sender and not any(domain in sender.lower() for domain in ['gmail.com', 'outlook.com', 'company.com']):
-            analysis.append("The sender domain should be verified for legitimacy.")
+        if sender and any(indicator in sender.lower() for indicator in ['noreply', 'no-reply', 'security-alert']):
+            analysis.append("⚠️ Generic sender address")
+        
+        # Check for domain spoofing
+        if sender and any(char in sender for char in ['0', '1', '-', '_']) and 'gmail' not in sender and 'outlook' not in sender:
+            analysis.append("⚠️ Potentially spoofed sender domain")
+            risk_level = "HIGH"
         
         if analysis:
-            return f"Based on the current email: {' '.join(analysis)} Always verify sender authenticity and avoid clicking suspicious links."
+            return f"**EMAIL ANALYSIS - {risk_level} RISK**\n\nSubject: {subject}\nFrom: {sender}\n\n**Red Flags Found:**\n" + "\n".join(analysis) + "\n\n**Recommendation:** Be cautious with this email. Verify sender through alternative means before taking any action."
         else:
-            return "This email appears to have standard characteristics. However, always remain cautious with unexpected emails and verify sender identity through alternative means."
+            return f"**EMAIL ANALYSIS - LOW RISK**\n\nSubject: {subject}\nFrom: {sender}\n\n**Assessment:** This email appears legitimate with no obvious red flags. However, always remain vigilant and verify unexpected requests through official channels."
     
     def _get_suggestions(self, message: str) -> List[str]:
         """Get follow-up suggestions."""
