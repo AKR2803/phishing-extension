@@ -245,10 +245,10 @@ class PhishingGuardian {
         this.banner.className = `phishing-guardian-banner ${bannerClass}`;
         this.banner.innerHTML = `
             <div class="banner-content">
+                <button class="banner-close" data-action="close-banner">×</button>
                 <div class="banner-header">
                     <span class="banner-icon">${icon}</span>
                     <span class="banner-title">${title}</span>
-                    <button class="banner-close" data-action="close-banner">×</button>
                 </div>
                 <div class="banner-details">
                     <p><strong>Confidence:</strong> ${Math.round(result.confidence * 100)}%</p>
@@ -341,7 +341,7 @@ class PhishingGuardian {
         button.className = 'phishing-guardian-chatbot-btn';
         button.innerHTML = '🛡️';
         button.title = 'Security Assistant';
-        button.onclick = () => this.toggleChatbot();
+        button.addEventListener('click', () => this.toggleChatbot());
         
         document.body.appendChild(button);
     }
@@ -360,16 +360,26 @@ class PhishingGuardian {
         this.chatbot.innerHTML = `
             <div class="chatbot-header">
                 <span>🛡️ Security Assistant</span>
-                <button onclick="phishingGuardian.closeChatbot()">×</button>
+                <button data-action="close-chatbot">×</button>
             </div>
             <div class="chatbot-messages" id="chatbot-messages"></div>
             <div class="chatbot-input">
                 <input type="text" id="chatbot-input" placeholder="Ask about email security...">
-                <button onclick="phishingGuardian.sendMessage()">Send</button>
+                <button data-action="send-message">Send</button>
             </div>
         `;
         
         document.body.appendChild(this.chatbot);
+        
+        // Add event listeners
+        this.chatbot.addEventListener('click', (e) => {
+            const action = e.target.getAttribute('data-action');
+            if (action === 'close-chatbot') {
+                this.closeChatbot();
+            } else if (action === 'send-message') {
+                this.sendMessage();
+            }
+        });
         
         // Add enter key listener
         document.getElementById('chatbot-input').addEventListener('keypress', (e) => {
