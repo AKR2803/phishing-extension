@@ -46,7 +46,7 @@ You can help with:
 - Suspicious link analysis
 - Security software recommendations"""
     
-    def get_response(self, message: str, session_id: str = 'default') -> Dict:
+    def get_response(self, message: str, session_id: str = 'default', email_context: Dict = None) -> Dict:
         """Get chatbot response."""
         try:
             # Check if security-related
@@ -67,9 +67,15 @@ You can help with:
             # Get conversation history
             history = self.sessions.get(session_id, [])
             
+            # Enhance message with email context if provided
+            enhanced_message = message
+            if email_context:
+                context_info = f"\n\nCurrent email context:\nSubject: {email_context.get('subject', 'N/A')}\nSender: {email_context.get('sender', 'N/A')}\nBody preview: {email_context.get('body', 'N/A')[:200]}..."
+                enhanced_message = message + context_info
+            
             # Prepare messages for Bedrock
             messages = [
-                {"role": "user", "content": message}
+                {"role": "user", "content": enhanced_message}
             ]
             
             # Add recent history (last 5 exchanges)

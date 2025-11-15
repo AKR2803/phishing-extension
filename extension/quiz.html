@@ -45,7 +45,7 @@
                 <h1>🛡️ Phishing Security Quiz</h1>
                 <p>Test your ability to identify phishing emails and protect yourself from cyber threats.</p>
                 <p>You'll see 5 email scenarios - decide if each one is legitimate or a phishing attempt.</p>
-                <button class="btn btn-primary" onclick="startQuiz()">Start Quiz</button>
+                <button class="btn btn-primary" id="startQuizBtn">Start Quiz</button>
             </div>
 
             <!-- Quiz Screen -->
@@ -65,18 +65,18 @@
                     <div class="email-content" id="emailContent"></div>
                     
                     <div class="options" id="options">
-                        <div class="option phishing" onclick="selectAnswer(true)">
+                        <div class="option phishing" data-answer="true">
                             <strong>🚨 PHISHING</strong><br>
                             <small>This is a malicious email</small>
                         </div>
-                        <div class="option legitimate" onclick="selectAnswer(false)">
+                        <div class="option legitimate" data-answer="false">
                             <strong>✅ LEGITIMATE</strong><br>
                             <small>This is a safe email</small>
                         </div>
                     </div>
                     
                     <div id="explanation" class="explanation hidden"></div>
-                    <button id="nextBtn" class="btn btn-primary hidden" onclick="nextQuestion()">Next Question</button>
+                    <button id="nextBtn" class="btn btn-primary hidden">Next Question</button>
                 </div>
             </div>
 
@@ -85,7 +85,7 @@
                 <h2>🎉 Quiz Complete!</h2>
                 <div class="score" id="finalScore"></div>
                 <div id="scoreMessage"></div>
-                <button class="btn btn-success" onclick="restartQuiz()">Take Quiz Again</button>
+                <button class="btn btn-success" id="restartQuizBtn">Take Quiz Again</button>
             </div>
         </div>
     </div>

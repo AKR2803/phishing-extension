@@ -73,6 +73,22 @@ let currentQuestion = 0;
 let score = 0;
 let answered = false;
 
+// Initialize event listeners when DOM loads
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('startQuizBtn').addEventListener('click', startQuiz);
+    document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+    document.getElementById('restartQuizBtn').addEventListener('click', restartQuiz);
+    
+    // Add click listeners to options
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.option')) {
+            const option = e.target.closest('.option');
+            const answer = option.getAttribute('data-answer') === 'true';
+            selectAnswer(answer);
+        }
+    });
+});
+
 function startQuiz() {
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('quizScreen').classList.remove('hidden');
