@@ -80,10 +80,7 @@ class MockPhishingClassifier:
             else:
                 recommendation = "Email appears safe"
             
-            logger.info("Mock classification completed", 
-                       is_phishing=is_phishing, 
-                       confidence=confidence,
-                       risk_factors_count=len(risk_factors))
+            logger.info(f"Mock classification completed - is_phishing: {is_phishing}, confidence: {confidence:.2f}, risk_factors: {len(risk_factors)}")
             
             return {
                 'is_phishing': is_phishing,
@@ -93,7 +90,7 @@ class MockPhishingClassifier:
             }
             
         except Exception as e:
-            logger.error("Mock classification failed", error=str(e))
+            logger.error(f"Mock classification failed: {str(e)}")
             return {
                 'is_phishing': False,
                 'confidence': 0.0,

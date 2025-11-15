@@ -35,13 +35,13 @@ source venv/bin/activate
 python run.py
 ```
 
-Backend runs at: http://localhost:5000
+Backend runs at: http://localhost:8080
 
 ## 4. Test API Endpoints
 
 ### Test Classification (without ML model)
 ```bash
-curl -X POST http://localhost:5000/api/classify \
+curl -X POST http://localhost:8080/api/classify \
   -H "Content-Type: application/json" \
   -d '{
     "subject": "URGENT: Verify your account now!",
@@ -52,12 +52,12 @@ curl -X POST http://localhost:5000/api/classify \
 
 ### Test Health Check
 ```bash
-curl http://localhost:5000/api/health
+curl http://localhost:8080/api/health
 ```
 
 ### Test Chatbot (requires AWS)
 ```bash
-curl -X POST http://localhost:5000/api/chat \
+curl -X POST http://localhost:8080/api/chat \
   -H "Content-Type: application/json" \
   -d '{
     "message": "How can I identify phishing emails?",
@@ -90,7 +90,7 @@ python run.py
 
 **Extension not working?**
 - Check Chrome console for errors
-- Verify backend is running on port 5000
+- Verify backend is running on port 8080
 - Check extension permissions
 
 **Chatbot not responding?**

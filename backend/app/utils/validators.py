@@ -19,7 +19,7 @@ def validate_email_data(data: Dict) -> Optional[str]:
     if not isinstance(data['sender'], str) or len(data['sender']) > 500:
         return "Invalid sender field"
     
-    if not isinstance(data['body'], str) or len(data['body']) > 50000:
+    if not isinstance(data['body'], str) or len(data['body']) > 80800:
         return "Invalid body field (too long)"
     
     return None

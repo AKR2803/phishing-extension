@@ -13,9 +13,7 @@ def report_email():
         data = request.get_json()
         
         # Log the report
-        logger.info("Email reported", 
-                   sender=data.get('sender'),
-                   subject=data.get('subject', '')[:50])
+        logger.info(f"Email reported - sender: {data.get('sender')}, subject: {data.get('subject', '')[:50]}")
         
         # In production, this would:
         # 1. Store report in database
@@ -29,7 +27,7 @@ def report_email():
         })
         
     except Exception as e:
-        logger.error("Report failed", error=str(e))
+        logger.error(f"Report failed: {str(e)}")
         return jsonify({'error': 'Failed to report email'}), 500
 
 
@@ -37,7 +35,7 @@ def report_email():
 def delete_email(email_id: str):
     """Delete an email (mock implementation)."""
     try:
-        logger.info("Email deletion requested", email_id=email_id)
+        logger.info(f"Email deletion requested - email_id: {email_id}")
         
         # In production, this would integrate with:
         # - Gmail API
@@ -50,5 +48,5 @@ def delete_email(email_id: str):
         })
         
     except Exception as e:
-        logger.error("Delete failed", error=str(e))
+        logger.error(f"Delete failed: {str(e)}")
         return jsonify({'error': 'Failed to delete email'}), 500

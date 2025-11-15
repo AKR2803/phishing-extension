@@ -5,7 +5,7 @@ import requests
 import json
 import time
 
-API_BASE = "http://localhost:5000/api"
+API_BASE = "http://localhost:8080/api"
 
 def test_health():
     """Test health endpoint."""

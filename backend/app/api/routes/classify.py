@@ -35,10 +35,7 @@ def classify_email():
         # Classify
         result = classifier.classify(email_content)
         
-        logger.info("Email classified", 
-                   sender=email_content['sender'],
-                   is_phishing=result['is_phishing'],
-                   confidence=result['confidence'])
+        logger.info(f"Email classified - sender: {email_content['sender']}, is_phishing: {result['is_phishing']}, confidence: {result['confidence']:.2f}")
         
         return jsonify({
             'is_phishing': result['is_phishing'],
@@ -48,7 +45,7 @@ def classify_email():
         })
         
     except Exception as e:
-        logger.error("Classification failed", error=str(e))
+        logger.error(f"Classification failed: {str(e)}")
         return jsonify({'error': 'Classification failed'}), 500
 
 

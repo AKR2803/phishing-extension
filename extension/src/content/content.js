@@ -4,7 +4,7 @@
 
 class PhishingGuardian {
     constructor() {
-        this.apiUrl = 'http://localhost:5000/api';
+        this.apiUrl = 'http://localhost:8080/api';
         this.currentEmail = null;
         this.banner = null;
         this.chatbot = null;

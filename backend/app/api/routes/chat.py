@@ -30,10 +30,7 @@ def chat_message():
         # Get chatbot response
         response = chatbot.get_response(message, session_id)
         
-        logger.info("Chat interaction", 
-                   session_id=session_id,
-                   message_length=len(message),
-                   is_security_related=response['is_security_related'])
+        logger.info(f"Chat interaction - session_id: {session_id}, message_length: {len(message)}, is_security_related: {response['is_security_related']}")
         
         return jsonify({
             'response': response['message'],
@@ -42,7 +39,7 @@ def chat_message():
         })
         
     except Exception as e:
-        logger.error("Chat failed", error=str(e))
+        logger.error(f"Chat failed: {str(e)}")
         return jsonify({'error': 'Chat service unavailable'}), 500
 
 
@@ -53,5 +50,5 @@ def get_chat_history(session_id: str):
         history = chatbot.get_history(session_id)
         return jsonify({'history': history})
     except Exception as e:
-        logger.error("Failed to get chat history", error=str(e))
+        logger.error(f"Failed to get chat history: {str(e)}")
         return jsonify({'error': 'Failed to retrieve history'}), 500
