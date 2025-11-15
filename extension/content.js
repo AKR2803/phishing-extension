@@ -11,17 +11,7 @@ if (window.phishingGuardianLoaded) {
     // Wrap everything in an IIFE to avoid global scope issues
     (function() {
 
-// IMMEDIATE TEST - This should show up in Gmail console if content script loads
-console.log('🛡️ PHISHING GUARDIAN CONTENT SCRIPT LOADED!');
-console.log('🛡️ Current URL:', window.location.href);
-console.log('🛡️ Document ready state:', document.readyState);
-
-// Test if we're on Gmail
-if (window.location.hostname.includes('mail.google.com')) {
-    console.log('🛡️ Gmail detected!');
-} else {
-    console.log('🛡️ Not on Gmail:', window.location.hostname);
-}
+// Extension loaded
 
 class PhishingGuardian {
     constructor() {
@@ -29,7 +19,7 @@ class PhishingGuardian {
         this.currentEmail = null;
         this.banner = null;
         this.chatbot = null;
-        console.log('[PhishingGuardian] Extension initialized');
+
         this.init();
     }
 
@@ -41,46 +31,31 @@ class PhishingGuardian {
 
     detectEmailProvider() {
         const hostname = window.location.hostname;
-        console.log(`[PhishingGuardian] Detecting email provider for: ${hostname}`);
-        
         if (hostname.includes('mail.google.com')) {
             this.provider = 'gmail';
             this.emailSelector = '[data-message-id], .adn';
             this.subjectSelector = 'h2, [data-thread-perm-id] h2, .hP';
             this.senderSelector = '[email], .go .g2, .gD';
             this.bodySelector = '.ii.gt div, .a3s.aiL, .ii.gt';
-            console.log('[PhishingGuardian] Gmail provider detected');
         } else if (hostname.includes('outlook')) {
             this.provider = 'outlook';
             this.emailSelector = '[role="main"], .wide-content-host';
             this.subjectSelector = '[role="main"] h1, [data-testid="message-subject"]';
             this.senderSelector = '[data-testid="message-header-from-single"], [title*="@"]';
             this.bodySelector = '[data-testid="message-body-content"], [role="document"]';
-            console.log('[PhishingGuardian] Outlook provider detected');
-        } else {
-            console.warn(`[PhishingGuardian] Unsupported email provider: ${hostname}`);
         }
     }
 
     // Removed automatic email observation to prevent infinite API calls
 
     async scanCurrentEmail() {
-        console.log('[PhishingGuardian] Starting email scan...');
         try {
             const emailData = this.extractEmailData();
             
             if (emailData) {
-                console.log('[PhishingGuardian] Email data extracted:', {
-                    subject: emailData.subject?.substring(0, 50) + '...',
-                    sender: emailData.sender,
-                    bodyLength: emailData.body?.length,
-                    provider: this.provider
-                });
                 this.currentEmail = emailData;
                 await this.analyzeEmail(emailData);
                 return emailData;
-            } else {
-                console.warn('[PhishingGuardian] No email data found');
             }
             return null;
         } catch (error) {
@@ -90,8 +65,6 @@ class PhishingGuardian {
     }
 
     extractEmailData() {
-        console.log(`[PhishingGuardian] Extracting email data using selectors for ${this.provider}`);
-        
         // Try multiple selectors for email container
         const selectors = this.emailSelector.split(', ');
         let emailElement = null;
@@ -99,30 +72,12 @@ class PhishingGuardian {
             emailElement = document.querySelector(sel.trim());
             if (emailElement) break;
         }
-        
-        if (!emailElement) {
-            console.warn(`[PhishingGuardian] Email element not found with selectors: ${this.emailSelector}`);
-            // For Gmail, try to extract from current page anyway
-            if (this.provider === 'gmail') {
-                console.log('[PhishingGuardian] Attempting Gmail fallback extraction');
-            }
-        }
 
         const subject = this.extractText(this.subjectSelector);
         const sender = this.extractSender();
         const body = this.extractText(this.bodySelector);
 
-        console.log('[PhishingGuardian] Extraction results:', {
-            subjectFound: !!subject,
-            senderFound: !!sender,
-            bodyFound: !!body,
-            subjectSelector: this.subjectSelector,
-            senderSelector: this.senderSelector,
-            bodySelector: this.bodySelector
-        });
-
         if (!subject && !sender && !body) {
-            console.warn('[PhishingGuardian] No email content extracted');
             return null;
         }
 
@@ -179,11 +134,9 @@ class PhishingGuardian {
     }
 
     async analyzeEmail(emailData) {
-        console.log('[PhishingGuardian] Starting email analysis...');
         try {
             this.showLoadingBanner();
 
-            console.log(`[PhishingGuardian] Making API request to: ${this.apiUrl}/classify`);
             const response = await fetch(`${this.apiUrl}/classify`, {
                 method: 'POST',
                 headers: {
@@ -191,20 +144,12 @@ class PhishingGuardian {
                 },
                 body: JSON.stringify(emailData)
             });
-
-            console.log(`[PhishingGuardian] API response status: ${response.status}`);
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
 
             const result = await response.json();
-            console.log('[PhishingGuardian] Analysis result:', {
-                is_phishing: result.is_phishing,
-                confidence: result.confidence,
-                risk_factors_count: result.risk_factors?.length || 0
-            });
-            
             this.showResultBanner(result);
 
             // Update stats
@@ -245,7 +190,6 @@ class PhishingGuardian {
         this.banner.className = `phishing-guardian-banner ${bannerClass}`;
         this.banner.innerHTML = `
             <div class="banner-content">
-                <button class="banner-close" data-action="close-banner">×</button>
                 <div class="banner-header">
                     <span class="banner-icon">${icon}</span>
                     <span class="banner-title">${title}</span>
@@ -253,21 +197,14 @@ class PhishingGuardian {
                 <div class="banner-details">
                     <p><strong>Confidence:</strong> ${Math.round(result.confidence * 100)}%</p>
                     <p><strong>Recommendation:</strong> ${result.recommendation}</p>
-                    ${result.risk_factors.length > 0 ? `
-                        <details>
-                            <summary>Risk Factors (${result.risk_factors.length})</summary>
-                            <ul>
-                                ${result.risk_factors.map(factor => `<li>${factor}</li>`).join('')}
-                            </ul>
-                        </details>
-                    ` : ''}
                 </div>
                 ${result.is_phishing ? `
                     <div class="banner-actions">
-                        <button class="btn-report" data-action="report-email">Report & Delete</button>
-                        <button class="btn-ignore" data-action="ignore-warning">Ignore Warning</button>
+                        <button class="btn-report" data-action="report-email">Report</button>
+                        <button class="btn-ignore" data-action="ignore-warning">Ignore</button>
                     </div>
                 ` : ''}
+                <button class="banner-close" data-action="close-banner">×</button>
             </div>
         `;
         
@@ -293,25 +230,38 @@ class PhishingGuardian {
     }
 
     insertBanner() {
-        // Try multiple insertion points for Gmail
-        const insertionPoints = [
-            '.adn', // Gmail conversation view
-            '[data-message-id]', // Gmail message
-            '.ii.gt', // Gmail message body area
-            '[role="main"]', // Outlook main area
-            'body' // Fallback
+        // Try to insert above subject line in Gmail
+        const subjectSelectors = [
+            'h2[data-legacy-thread-id]', // Gmail subject
+            '.hP', // Gmail subject alternative
+            'h2', // Generic subject
+            '[role="main"] h1' // Outlook subject
         ];
         
-        for (const selector of insertionPoints) {
-            const container = document.querySelector(selector);
-            if (container) {
-                console.log(`[PhishingGuardian] Inserting banner at: ${selector}`);
-                container.insertBefore(this.banner, container.firstChild);
+        // First try to insert above subject
+        for (const selector of subjectSelectors) {
+            const subjectElement = document.querySelector(selector);
+            if (subjectElement) {
+                subjectElement.parentNode.insertBefore(this.banner, subjectElement);
                 return;
             }
         }
         
-        console.warn('[PhishingGuardian] Could not find suitable container for banner');
+        // Fallback to conversation container
+        const fallbackSelectors = [
+            '.adn', // Gmail conversation view
+            '[data-message-id]', // Gmail message
+            '[role="main"]', // Outlook main area
+            'body' // Final fallback
+        ];
+        
+        for (const selector of fallbackSelectors) {
+            const container = document.querySelector(selector);
+            if (container) {
+                container.insertBefore(this.banner, container.firstChild);
+                return;
+            }
+        }
     }
 
     removeBanner() {
@@ -458,7 +408,7 @@ class PhishingGuardian {
                 });
             }
         } catch (error) {
-            console.log('[PhishingGuardian] Could not load chat history:', error);
+            // Chat history not available
         }
     }
     
@@ -508,24 +458,13 @@ class PhishingGuardian {
 
 // Initialize when page loads (only if not already loaded)
 if (!window.phishingGuardian) {
-    console.log('[PhishingGuardian] Content script loading...');
     window.phishingGuardian = new PhishingGuardian();
-    console.log('[PhishingGuardian] PhishingGuardian instance created');
-} else {
-    console.log('[PhishingGuardian] Using existing instance');
 }
 
-// Test if chrome.runtime is available
+// Listen for messages from popup
 if (typeof chrome !== 'undefined' && chrome.runtime) {
-    console.log('[PhishingGuardian] Chrome runtime available');
-    
-    // Listen for messages from popup
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-        console.log('[PhishingGuardian] Message received:', request);
-        console.log('[PhishingGuardian] Sender:', sender);
-        
         if (request.action === 'test') {
-            console.log('[PhishingGuardian] Test request received');
             sendResponse({
                 success: true,
                 message: 'Content script is working!',
@@ -536,23 +475,15 @@ if (typeof chrome !== 'undefined' && chrome.runtime) {
         }
         
         if (request.action === 'scanEmail') {
-            console.log('[PhishingGuardian] Processing scan request...');
-            
-            // Test immediate response
-            console.log('[PhishingGuardian] Sending immediate test response');
             sendResponse({success: true, test: 'immediate response working'});
             
-            // Then do actual scan
             window.phishingGuardian.scanCurrentEmail().then(result => {
-                console.log('[PhishingGuardian] Scan completed with result:', result);
-                // Send another message since we already sent immediate response
                 chrome.runtime.sendMessage({
                     action: 'scanComplete',
                     success: true,
                     data: result
                 });
             }).catch(error => {
-                console.error('[PhishingGuardian] Scan failed:', error);
                 chrome.runtime.sendMessage({
                     action: 'scanComplete',
                     success: false,
@@ -560,51 +491,12 @@ if (typeof chrome !== 'undefined' && chrome.runtime) {
                 });
             });
             
-            return true; // Keep message channel open
+            return true;
         }
         
-        console.log('[PhishingGuardian] Unknown action:', request.action);
         sendResponse({success: false, error: 'Unknown action'});
     });
-    
-    console.log('[PhishingGuardian] Message listener registered');
-} else {
-    console.error('[PhishingGuardian] Chrome runtime not available!');
 }
-
-// Test DOM ready state
-console.log('[PhishingGuardian] Document ready state:', document.readyState);
-console.log('[PhishingGuardian] Current URL:', window.location.href);
-
-// Add window load event for additional debugging
-window.addEventListener('load', () => {
-    console.log('[PhishingGuardian] Window loaded');
-});
-
-// Test if we can find Gmail elements
-setTimeout(() => {
-    console.log('[PhishingGuardian] Testing element detection after 3 seconds...');
-    const testSelectors = [
-        '[data-message-id]',
-        '.adn',
-        'h2',
-        '.hP',
-        '[email]',
-        '.go .g2',
-        '.gD',
-        '.ii.gt div',
-        '.a3s.aiL',
-        '.ii.gt'
-    ];
-    
-    testSelectors.forEach(selector => {
-        const elements = document.querySelectorAll(selector);
-        console.log(`[PhishingGuardian] Selector '${selector}' found ${elements.length} elements`);
-        if (elements.length > 0) {
-            console.log(`[PhishingGuardian] First element text preview:`, elements[0].textContent?.substring(0, 100));
-        }
-    });
-}, 3000);
 
     })(); // Close IIFE
 }
