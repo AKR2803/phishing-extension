@@ -27,10 +27,13 @@ def chat_message():
         message = data.get('message', '').strip()
         session_id = data.get('session_id', 'default')
         
-        # Get chatbot response
-        response = chatbot.get_response(message, session_id)
+        # Extract email context if provided
+        email_context = data.get('email_context')
         
-        logger.info(f"Chat interaction - session_id: {session_id}, message_length: {len(message)}, is_security_related: {response['is_security_related']}")
+        # Get chatbot response with email context
+        response = chatbot.get_response(message, session_id, email_context)
+        
+        logger.info(f"Chat interaction - session_id: {session_id}, message_length: {len(message)}, has_email_context: {bool(email_context)}, is_security_related: {response['is_security_related']}")
         
         return jsonify({
             'response': response['message'],

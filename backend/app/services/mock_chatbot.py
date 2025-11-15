@@ -29,8 +29,8 @@ class MockSecurityChatbot:
         message_lower = message.lower()
         return any(keyword in message_lower for keyword in self.security_keywords)
     
-    def get_response(self, message: str, session_id: str = 'default') -> Dict:
-        """Get mock chatbot response."""
+    def get_response(self, message: str, session_id: str = 'default', email_context: Dict = None) -> Dict:
+        """Get mock chatbot response with email context."""
         try:
             is_security_related = self._is_security_related(message)
             
@@ -46,14 +46,19 @@ class MockSecurityChatbot:
                     ]
                 }
             
-            # Simple keyword matching for responses
+            # Handle email context questions
             message_lower = message.lower()
-            response_text = self.responses['default']
             
-            for keyword, response in self.responses.items():
-                if keyword != 'default' and keyword in message_lower:
-                    response_text = response
-                    break
+            if email_context and ('why' in message_lower or 'not flagged' in message_lower or 'safe' in message_lower):
+                response_text = self._analyze_email_context(email_context, message)
+            else:
+                # Simple keyword matching for responses
+                response_text = self.responses['default']
+                
+                for keyword, response in self.responses.items():
+                    if keyword != 'default' and keyword in message_lower:
+                        response_text = response
+                        break
             
             # Store in session
             if session_id not in self.sessions:
@@ -77,6 +82,29 @@ class MockSecurityChatbot:
                 'is_security_related': True,
                 'suggestions': []
             }
+    
+    def _analyze_email_context(self, email_context: Dict, message: str) -> str:
+        """Analyze email context and provide specific feedback."""
+        subject = email_context.get('subject', '')
+        sender = email_context.get('sender', '')
+        body = email_context.get('body', '')
+        
+        analysis = []
+        
+        # Check for common phishing indicators
+        if any(word in subject.lower() for word in ['urgent', 'verify', 'suspend', 'action required']):
+            analysis.append("The subject contains urgent language which is common in phishing.")
+        
+        if any(word in body.lower() for word in ['click here', 'verify account', 'suspended', 'expires']):
+            analysis.append("The email body contains suspicious phrases often used in phishing attempts.")
+        
+        if sender and not any(domain in sender.lower() for domain in ['gmail.com', 'outlook.com', 'company.com']):
+            analysis.append("The sender domain should be verified for legitimacy.")
+        
+        if analysis:
+            return f"Based on the current email: {' '.join(analysis)} Always verify sender authenticity and avoid clicking suspicious links."
+        else:
+            return "This email appears to have standard characteristics. However, always remain cautious with unexpected emails and verify sender identity through alternative means."
     
     def _get_suggestions(self, message: str) -> List[str]:
         """Get follow-up suggestions."""

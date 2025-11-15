@@ -2,6 +2,13 @@
  * Content script for email extraction and banner display
  */
 
+// Prevent multiple injections
+if (window.phishingGuardianLoaded) {
+    console.log('🛡️ PhishingGuardian already loaded, skipping...');
+    return;
+}
+window.phishingGuardianLoaded = true;
+
 // IMMEDIATE TEST - This should show up in Gmail console if content script loads
 console.log('🛡️ PHISHING GUARDIAN CONTENT SCRIPT LOADED!');
 console.log('🛡️ Current URL:', window.location.href);
@@ -372,15 +379,23 @@ class PhishingGuardian {
         this.addChatMessage('user', message);
         
         try {
+            // Include current email context in the chat
+            const chatPayload = {
+                message: message,
+                session_id: 'extension-' + Date.now(),
+                email_context: this.currentEmail ? {
+                    subject: this.currentEmail.subject,
+                    sender: this.currentEmail.sender,
+                    body: this.currentEmail.body?.substring(0, 500) // Limit body length
+                } : null
+            };
+            
             const response = await fetch(`${this.apiUrl}/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    message: message,
-                    session_id: 'extension-' + Date.now()
-                })
+                body: JSON.stringify(chatPayload)
             });
             
             const result = await response.json();
@@ -427,10 +442,14 @@ class PhishingGuardian {
     }
 }
 
-// Initialize when page loads
-console.log('[PhishingGuardian] Content script loading...');
-const phishingGuardian = new PhishingGuardian();
-console.log('[PhishingGuardian] PhishingGuardian instance created');
+// Initialize when page loads (only if not already loaded)
+if (!window.phishingGuardian) {
+    console.log('[PhishingGuardian] Content script loading...');
+    window.phishingGuardian = new PhishingGuardian();
+    console.log('[PhishingGuardian] PhishingGuardian instance created');
+} else {
+    console.log('[PhishingGuardian] Using existing instance');
+}
 
 // Test if chrome.runtime is available
 if (typeof chrome !== 'undefined' && chrome.runtime) {
@@ -447,7 +466,7 @@ if (typeof chrome !== 'undefined' && chrome.runtime) {
                 success: true,
                 message: 'Content script is working!',
                 url: window.location.href,
-                provider: phishingGuardian.provider
+                provider: window.phishingGuardian ? window.phishingGuardian.provider : 'unknown'
             });
             return;
         }
@@ -460,7 +479,7 @@ if (typeof chrome !== 'undefined' && chrome.runtime) {
             sendResponse({success: true, test: 'immediate response working'});
             
             // Then do actual scan
-            phishingGuardian.scanCurrentEmail().then(result => {
+            window.phishingGuardian.scanCurrentEmail().then(result => {
                 console.log('[PhishingGuardian] Scan completed with result:', result);
                 // Send another message since we already sent immediate response
                 chrome.runtime.sendMessage({
