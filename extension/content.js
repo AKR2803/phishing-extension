@@ -248,7 +248,7 @@ class PhishingGuardian {
                 <div class="banner-header">
                     <span class="banner-icon">${icon}</span>
                     <span class="banner-title">${title}</span>
-                    <button class="banner-close" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
+                    <button class="banner-close" data-action="close-banner">×</button>
                 </div>
                 <div class="banner-details">
                     <p><strong>Confidence:</strong> ${Math.round(result.confidence * 100)}%</p>
@@ -264,14 +264,15 @@ class PhishingGuardian {
                 </div>
                 ${result.is_phishing ? `
                     <div class="banner-actions">
-                        <button class="btn-report" onclick="phishingGuardian.reportEmail()">Report & Delete</button>
-                        <button class="btn-ignore" onclick="this.parentElement.parentElement.remove()">Ignore Warning</button>
+                        <button class="btn-report" data-action="report-email">Report & Delete</button>
+                        <button class="btn-ignore" data-action="ignore-warning">Ignore Warning</button>
                     </div>
                 ` : ''}
             </div>
         `;
         
         this.insertBanner();
+        this.addBannerEventListeners();
     }
 
     showErrorBanner() {
@@ -283,11 +284,12 @@ class PhishingGuardian {
             <div class="banner-content">
                 <span class="banner-icon">⚠️</span>
                 <span>Unable to analyze email. Please review manually.</span>
-                <button class="banner-close" onclick="this.parentElement.parentElement.remove()">×</button>
+                <button class="banner-close" data-action="close-banner">×</button>
             </div>
         `;
         
         this.insertBanner();
+        this.addBannerEventListeners();
     }
 
     insertBanner() {
@@ -316,6 +318,22 @@ class PhishingGuardian {
         if (this.banner && this.banner.parentNode) {
             this.banner.parentNode.removeChild(this.banner);
         }
+    }
+
+    addBannerEventListeners() {
+        if (!this.banner) return;
+        
+        this.banner.addEventListener('click', (e) => {
+            const action = e.target.getAttribute('data-action');
+            
+            if (action === 'close-banner') {
+                this.removeBanner();
+            } else if (action === 'report-email') {
+                this.reportEmail();
+            } else if (action === 'ignore-warning') {
+                this.removeBanner();
+            }
+        });
     }
 
     createChatbotButton() {
