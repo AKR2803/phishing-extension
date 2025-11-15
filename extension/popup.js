@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
   console.log('[PhishingGuardian Popup] Popup loaded');
   const testBtn = document.getElementById('testBtn');
   const scanBtn = document.getElementById('scanBtn');
+  const quizBtn = document.getElementById('quizBtn');
   const chatBtn = document.getElementById('chatBtn');
   const status = document.getElementById('status');
   
@@ -109,6 +110,11 @@ document.addEventListener('DOMContentLoaded', function() {
       console.error('[PhishingGuardian Popup] Scan error:', error);
       status.innerHTML = `<p>❌ Error: ${error.message}</p>`;
     }
+  });
+
+  quizBtn.addEventListener('click', function() {
+    console.log('[PhishingGuardian Popup] Quiz button clicked');
+    chrome.tabs.create({ url: chrome.runtime.getURL('quiz.html') });
   });
 
   chatBtn.addEventListener('click', function() {

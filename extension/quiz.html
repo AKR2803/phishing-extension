@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Security Quiz</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .quiz-card { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden; }
+        .header { background: #2c3e50; color: white; padding: 20px; text-align: center; }
+        .content { padding: 30px; }
+        .question { font-size: 18px; margin-bottom: 20px; font-weight: bold; }
+        .email-content { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin: 20px 0; font-family: monospace; white-space: pre-wrap; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
+        .option { padding: 15px; border: 2px solid #ddd; border-radius: 10px; cursor: pointer; transition: all 0.3s; text-align: center; }
+        .option:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .option.phishing { border-color: #e74c3c; background: #fdf2f2; }
+        .option.legitimate { border-color: #27ae60; background: #f2fdf2; }
+        .option.correct { border-color: #27ae60; background: #d4edda; }
+        .option.incorrect { border-color: #e74c3c; background: #f8d7da; }
+        .explanation { margin: 20px 0; padding: 20px; border-radius: 10px; }
+        .explanation.correct { background: #d4edda; border: 1px solid #27ae60; }
+        .explanation.incorrect { background: #f8d7da; border: 1px solid #e74c3c; }
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; transition: all 0.3s; }
+        .btn-primary { background: #3498db; color: white; }
+        .btn-primary:hover { background: #2980b9; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-success:hover { background: #229954; }
+        .progress { background: #ecf0f1; height: 8px; border-radius: 4px; margin: 20px 0; }
+        .progress-bar { background: #3498db; height: 100%; border-radius: 4px; transition: width 0.3s; }
+        .score { text-align: center; font-size: 24px; margin: 20px 0; }
+        .hidden { display: none; }
+        .start-screen, .result-screen { text-align: center; padding: 40px; }
+        .start-screen h1 { color: #2c3e50; margin-bottom: 20px; }
+        .start-screen p { color: #7f8c8d; margin-bottom: 30px; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="quiz-card">
+            <!-- Start Screen -->
+            <div id="startScreen" class="start-screen">
+                <h1>🛡️ Phishing Security Quiz</h1>
+                <p>Test your ability to identify phishing emails and protect yourself from cyber threats.</p>
+                <p>You'll see 5 email scenarios - decide if each one is legitimate or a phishing attempt.</p>
+                <button class="btn btn-primary" onclick="startQuiz()">Start Quiz</button>
+            </div>
+
+            <!-- Quiz Screen -->
+            <div id="quizScreen" class="hidden">
+                <div class="header">
+                    <h2>🛡️ Phishing Security Quiz</h2>
+                    <div id="progress">
+                        <div class="progress">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                        <span id="questionCounter">Question 1 of 5</span>
+                    </div>
+                </div>
+                
+                <div class="content">
+                    <div class="question" id="questionText">Is this email legitimate or phishing?</div>
+                    <div class="email-content" id="emailContent"></div>
+                    
+                    <div class="options" id="options">
+                        <div class="option phishing" onclick="selectAnswer(true)">
+                            <strong>🚨 PHISHING</strong><br>
+                            <small>This is a malicious email</small>
+                        </div>
+                        <div class="option legitimate" onclick="selectAnswer(false)">
+                            <strong>✅ LEGITIMATE</strong><br>
+                            <small>This is a safe email</small>
+                        </div>
+                    </div>
+                    
+                    <div id="explanation" class="explanation hidden"></div>
+                    <button id="nextBtn" class="btn btn-primary hidden" onclick="nextQuestion()">Next Question</button>
+                </div>
+            </div>
+
+            <!-- Result Screen -->
+            <div id="resultScreen" class="result-screen hidden">
+                <h2>🎉 Quiz Complete!</h2>
+                <div class="score" id="finalScore"></div>
+                <div id="scoreMessage"></div>
+                <button class="btn btn-success" onclick="restartQuiz()">Take Quiz Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="quiz.js"></script>
+</body>
+</html>

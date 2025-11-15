@@ -47,7 +47,7 @@
   
   "web_accessible_resources": [
     {
-      "resources": ["chatbot.html", "styles.css"],
+      "resources": ["quiz.html", "quiz.js", "chatbot.html", "styles.css"],
       "matches": ["<all_urls>"]
     }
   ]

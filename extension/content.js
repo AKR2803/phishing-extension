@@ -5,9 +5,11 @@
 // Prevent multiple injections
 if (window.phishingGuardianLoaded) {
     console.log('🛡️ PhishingGuardian already loaded, skipping...');
-    return;
-}
-window.phishingGuardianLoaded = true;
+} else {
+    window.phishingGuardianLoaded = true;
+
+    // Wrap everything in an IIFE to avoid global scope issues
+    (function() {
 
 // IMMEDIATE TEST - This should show up in Gmail console if content script loads
 console.log('🛡️ PHISHING GUARDIAN CONTENT SCRIPT LOADED!');
@@ -541,3 +543,6 @@ setTimeout(() => {
         }
     });
 }, 3000);
+
+    })(); // Close IIFE
+}
