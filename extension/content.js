@@ -388,8 +388,14 @@ class PhishingGuardian {
             }
         });
         
-        // Welcome message
-        this.addChatMessage('assistant', 'Hello! I\'m your security assistant. Ask me about phishing, email security, or online safety.');
+        // Load chat history and show welcome message
+        this.loadChatHistory();
+        
+        // Add welcome message if no history
+        const messagesContainer = document.getElementById('chatbot-messages');
+        if (messagesContainer.children.length === 0) {
+            this.addChatMessage('assistant', 'Hello! I\'m your security assistant. Ask me about phishing, email security, or online safety.');
+        }
     }
 
     closeChatbot() {
@@ -412,7 +418,7 @@ class PhishingGuardian {
             // Include current email context in the chat
             const chatPayload = {
                 message: message,
-                session_id: 'extension-' + Date.now(),
+                session_id: this.getSessionId(),
                 email_context: this.currentEmail ? {
                     subject: this.currentEmail.subject,
                     sender: this.currentEmail.sender,
@@ -434,6 +440,34 @@ class PhishingGuardian {
         } catch (error) {
             this.addChatMessage('assistant', 'Sorry, I\'m having trouble right now. Please try again later.');
         }
+    }
+
+    async loadChatHistory() {
+        try {
+            const sessionId = this.getSessionId();
+            const response = await fetch(`${this.apiUrl}/chat/history/${sessionId}`);
+            
+            if (response.ok) {
+                const data = await response.json();
+                const history = data.history || [];
+                
+                // Display history
+                history.forEach(exchange => {
+                    this.addChatMessage('user', exchange.user);
+                    this.addChatMessage('assistant', exchange.assistant);
+                });
+            }
+        } catch (error) {
+            console.log('[PhishingGuardian] Could not load chat history:', error);
+        }
+    }
+    
+    getSessionId() {
+        // Use a consistent session ID based on current email or URL
+        if (this.currentEmail && this.currentEmail.sender) {
+            return 'session-' + btoa(this.currentEmail.sender).substring(0, 10);
+        }
+        return 'session-' + btoa(window.location.href).substring(0, 10);
     }
 
     addChatMessage(sender, message) {
