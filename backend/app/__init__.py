@@ -10,8 +10,14 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
     
-    # Enable CORS for browser extension
-    CORS(app, origins=["chrome-extension://*"])
+    # Enable CORS for browser extension and Gmail
+    CORS(app, origins=[
+        "chrome-extension://*",
+        "https://mail.google.com",
+        "https://outlook.live.com",
+        "https://outlook.office.com",
+        "http://localhost:*"
+    ], supports_credentials=True)
     
     # Register blueprints
     app.register_blueprint(api_bp, url_prefix='/api')

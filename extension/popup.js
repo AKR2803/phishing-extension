@@ -15,14 +15,34 @@ document.addEventListener('DOMContentLoaded', function() {
       const tab = tabs[0];
       console.log(`[PhishingGuardian Popup] Testing on: ${tab.url}`);
       
-      const response = await chrome.tabs.sendMessage(tab.id, {action: 'test'});
-      console.log('[PhishingGuardian Popup] Test response:', response);
-      
-      if (response) {
-        status.innerHTML = '<p>✅ Extension is working! Content script responded.</p>';
-      } else {
-        status.innerHTML = '<p>❌ No response from content script.</p>';
+      // First try to inject content script manually
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ['content.js']
+        });
+        console.log('[PhishingGuardian Popup] Content script injected manually');
+      } catch (injectError) {
+        console.log('[PhishingGuardian Popup] Manual injection failed:', injectError);
       }
+      
+      // Wait a bit then test
+      setTimeout(async () => {
+        try {
+          const response = await chrome.tabs.sendMessage(tab.id, {action: 'test'});
+          console.log('[PhishingGuardian Popup] Test response:', response);
+          
+          if (response) {
+            status.innerHTML = '<p>✅ Extension is working! Content script responded.</p>';
+          } else {
+            status.innerHTML = '<p>❌ No response from content script.</p>';
+          }
+        } catch (msgError) {
+          console.error('[PhishingGuardian Popup] Message error:', msgError);
+          status.innerHTML = `<p>❌ Test failed: ${msgError.message}</p>`;
+        }
+      }, 1000);
+      
     } catch (error) {
       console.error('[PhishingGuardian Popup] Test error:', error);
       status.innerHTML = `<p>❌ Test failed: ${error.message}</p>`;

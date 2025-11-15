@@ -2,6 +2,18 @@
  * Content script for email extraction and banner display
  */
 
+// IMMEDIATE TEST - This should show up in Gmail console if content script loads
+console.log('🛡️ PHISHING GUARDIAN CONTENT SCRIPT LOADED!');
+console.log('🛡️ Current URL:', window.location.href);
+console.log('🛡️ Document ready state:', document.readyState);
+
+// Test if we're on Gmail
+if (window.location.hostname.includes('mail.google.com')) {
+    console.log('🛡️ Gmail detected!');
+} else {
+    console.log('🛡️ Not on Gmail:', window.location.hostname);
+}
+
 class PhishingGuardian {
     constructor() {
         this.apiUrl = 'http://localhost:8080/api';
